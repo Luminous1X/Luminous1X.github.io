@@ -1,0 +1,737 @@
+:root {
+	--bg: #030308;
+	--fg: #f1f1f4;
+	--mid: #8b8b9c;
+	--dim: #34343f;
+	--panel: #06060c;
+	--accent: #ffd98a; /* replaced by `accent` from content.js */
+
+	--font-name: 'Pixelify Sans', monospace;
+	--font-body: 'VT323', monospace;
+	--font-label: 'Silkscreen', monospace;
+
+	/* a little pixel arrow, the menu cursor */
+	--arrow: polygon(0 0, 2px 0, 2px 2px, 4px 2px, 4px 4px, 6px 4px, 6px 6px, 8px 6px, 8px 8px, 6px 8px, 6px 10px, 4px 10px, 4px 12px, 2px 12px, 2px 14px, 0 14px);
+
+	color-scheme: dark;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	height: 100%;
+}
+
+body {
+	background: radial-gradient(120% 90% at 50% 38%, #0a0a18 0%, var(--bg) 62%) fixed, var(--bg);
+	color: var(--fg);
+	font-family: var(--font-body);
+	overflow: hidden;
+	-webkit-font-smoothing: antialiased;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+#sky {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+/* faint scanlines and a vignette, for the old-monitor feel */
+.crt {
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 50;
+	background:
+		radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.55) 100%),
+		repeating-linear-gradient(to bottom, rgb(255 255 255 / 0.018) 0 1px, transparent 1px 3px);
+}
+
+/* ------------------------------------------------------------ stage
+   main.js works out the layout and hands it over in custom properties */
+
+#stage {
+	position: fixed;
+	inset: 0;
+}
+
+#orbit {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+/* ------------------------------------------------------------ the icon */
+
+#icon {
+	position: absolute;
+	left: var(--icon-x);
+	top: var(--icon-y);
+	width: var(--icon-w);
+	height: var(--icon-h);
+	z-index: 20;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.formed #icon {
+	opacity: 1;
+	/* the negative delay starts the bob mid-swing, so it doesn't jump */
+	animation: bob 1.8s ease-in-out -0.9s infinite alternate;
+}
+
+@keyframes bob {
+	from {
+		transform: translateY(-3px);
+	}
+	to {
+		transform: translateY(3px);
+	}
+}
+
+#icon svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+.halo {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	filter: blur(calc(var(--cell) * 2.4));
+}
+
+.formed .halo {
+	animation:
+		halo-in 1s forwards,
+		halo 4.8s ease-in-out 1s infinite alternate;
+}
+
+@keyframes halo-in {
+	to {
+		opacity: 0.6;
+	}
+}
+
+@keyframes halo {
+	from {
+		opacity: 0.6;
+	}
+	to {
+		opacity: 0.9;
+	}
+}
+
+.glints {
+	position: absolute;
+	inset: 0;
+}
+
+.glint {
+	position: absolute;
+	width: calc(var(--cell) * 4);
+	height: calc(var(--cell) * 4);
+	margin: calc(var(--cell) * -2) 0 0 calc(var(--cell) * -2);
+	transform: scale(0);
+}
+
+.glint::before,
+.glint::after {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	background: var(--fg);
+	transform: translate(-50%, -50%);
+}
+
+.glint::before {
+	width: 100%;
+	height: 2px;
+}
+
+.glint::after {
+	width: 2px;
+	height: 100%;
+}
+
+.formed .glint {
+	animation: glint var(--p) linear var(--d) infinite;
+}
+
+@keyframes glint {
+	0%,
+	18%,
+	100% {
+		transform: scale(0);
+	}
+	9% {
+		transform: scale(1);
+	}
+}
+
+/* ------------------------------------------------------------ name and tagline */
+
+#title {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: var(--title-y);
+	z-index: 25;
+	text-align: center;
+	pointer-events: none;
+	transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.open #title {
+	transform: translateY(var(--slide));
+}
+
+#name {
+	margin: 0;
+	font: 600 var(--name-size) / 1 var(--font-name);
+	letter-spacing: 0.02em;
+	text-shadow:
+		0 0 2px rgb(241 241 244 / 0.6),
+		0 0 18px rgb(241 241 244 / 0.4);
+}
+
+#name .ch {
+	display: inline-block;
+	opacity: 0;
+}
+
+.formed #name .ch {
+	animation: letter 0.4s steps(4) calc(var(--i) * 70ms) both;
+}
+
+@keyframes letter {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+#tagline {
+	margin: 12px 0 0;
+	font-size: var(--tag-size);
+	color: var(--mid);
+	opacity: 0;
+}
+
+.formed #tagline {
+	animation: fade 0.8s 0.7s forwards;
+}
+
+#hint {
+	margin: 18px 0 0;
+	font: 12px/1 var(--font-label);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--mid);
+	opacity: 0;
+}
+
+.open #hint {
+	animation:
+		fade 0.8s 1.2s forwards,
+		breathe 3s ease-in-out 2s infinite;
+}
+
+@keyframes fade {
+	to {
+		opacity: 0.85;
+	}
+}
+
+@keyframes breathe {
+	0%,
+	100% {
+		opacity: 0.85;
+	}
+	50% {
+		opacity: 0.4;
+	}
+}
+
+/* ------------------------------------------------------------ things in orbit */
+
+.sat {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: var(--sat);
+	height: var(--sat);
+	margin: calc(var(--sat) / -2) 0 0 calc(var(--sat) / -2);
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+	pointer-events: auto;
+	visibility: hidden;
+	opacity: 0;
+	will-change: transform, opacity;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.sat svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+	filter: drop-shadow(0 0 5px rgb(241 241 244 / 0.35));
+	transition:
+		filter 0.2s,
+		transform 0.2s steps(2);
+}
+
+.sat:hover svg,
+.sat:focus-visible svg {
+	transform: scale(1.15);
+	filter: drop-shadow(0 0 2px var(--accent)) drop-shadow(0 0 12px var(--accent));
+}
+
+.sat:focus {
+	outline: none;
+}
+
+.sat:focus-visible::after {
+	content: '';
+	position: absolute;
+	inset: -8px;
+	border: 2px dashed var(--accent);
+}
+
+.sat.empty {
+	cursor: default;
+}
+
+.sat.empty svg {
+	opacity: 0.4;
+}
+
+.sat .label {
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 10px);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 9px 5px;
+	background: var(--panel);
+	box-shadow:
+		0 -2px var(--fg),
+		0 2px var(--fg),
+		-2px 0 var(--fg),
+		2px 0 var(--fg);
+	font: 12px/1 var(--font-label);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	opacity: 0;
+	transform: translate(-50%, 4px);
+	transition:
+		opacity 0.15s,
+		transform 0.15s steps(2);
+	pointer-events: none;
+}
+
+.sat .label::before {
+	content: '';
+	width: 8px;
+	height: 14px;
+	margin: -2px 0 -1px;
+	background: var(--accent);
+	clip-path: var(--arrow);
+	transform: scale(0.75);
+	animation: nudge 1s steps(2) infinite;
+}
+
+.sat .label small {
+	font-size: inherit;
+	color: var(--mid);
+}
+
+.sat:hover .label,
+.sat:focus-visible .label {
+	opacity: 1;
+	transform: translate(-50%, 0);
+}
+
+@keyframes nudge {
+	50% {
+		translate: 3px 0;
+	}
+}
+
+/* no hover on touch screens, so the names sit under the icons instead */
+@media (hover: none) {
+	.sat .label {
+		top: calc(100% + 2px);
+		bottom: auto;
+		padding: 0;
+		background: none;
+		box-shadow: none;
+		font-size: 9px;
+		color: var(--mid);
+		opacity: 0.9;
+		transform: translate(-50%, 0);
+	}
+
+	.sat .label::before,
+	.sat .label small {
+		display: none;
+	}
+
+	.close {
+		font-size: 0;
+	}
+
+	.close::after {
+		content: 'Close';
+		font-size: 12px;
+	}
+}
+
+/* ------------------------------------------------------------ windows */
+
+dialog#window {
+	width: min(640px, calc(100vw - 32px));
+	max-height: min(80vh, 720px);
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--fg);
+	overflow: visible;
+}
+
+dialog#window::backdrop {
+	background: rgb(2 2 8 / 0.6);
+	backdrop-filter: blur(2px);
+}
+
+.frame {
+	position: relative;
+	margin: 4px;
+	background: var(--panel);
+	/* a white outline with the corner pixels left out, so the corners read as rounded */
+	box-shadow:
+		0 -4px var(--fg),
+		0 4px var(--fg),
+		-4px 0 var(--fg),
+		4px 0 var(--fg);
+	filter: drop-shadow(0 0 28px rgb(255 217 138 / 0.12));
+}
+
+.frame::before {
+	content: '';
+	position: absolute;
+	inset: 6px;
+	pointer-events: none;
+	box-shadow:
+		0 -2px var(--dim),
+		0 2px var(--dim),
+		-2px 0 var(--dim),
+		2px 0 var(--dim);
+}
+
+dialog[open] .frame {
+	animation: win-open 0.28s steps(5) both;
+}
+
+dialog.closing .frame {
+	animation: win-close 0.16s steps(3) forwards;
+}
+
+@keyframes win-open {
+	from {
+		transform: scaleY(0.04);
+		opacity: 0.4;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+
+@keyframes win-close {
+	to {
+		transform: scaleY(0.04);
+		opacity: 0;
+	}
+}
+
+.bar {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 20px 22px 14px;
+}
+
+.bar::after {
+	content: '';
+	position: absolute;
+	left: 22px;
+	right: 22px;
+	bottom: 0;
+	border-bottom: 2px dashed var(--dim);
+}
+
+.bar-glyph svg {
+	display: block;
+	width: 32px;
+	height: 32px;
+	filter: drop-shadow(0 0 6px rgb(241 241 244 / 0.35));
+}
+
+#window-title {
+	flex: 1;
+	margin: 0;
+	font: 600 28px/1 var(--font-name);
+}
+
+.close {
+	padding: 7px 9px 6px;
+	border: 2px solid var(--dim);
+	background: none;
+	color: var(--mid);
+	font: 12px/1 var(--font-label);
+	letter-spacing: 0.1em;
+	cursor: pointer;
+}
+
+.close:hover,
+.close:focus-visible {
+	border-color: var(--fg);
+	background: var(--fg);
+	color: var(--bg);
+	outline: none;
+}
+
+.body {
+	max-height: calc(min(80vh, 720px) - 90px);
+	padding: 16px 26px 24px;
+	overflow: auto;
+	font-size: 23px;
+	line-height: 1.2;
+	color: var(--mid);
+	scrollbar-width: thin;
+	scrollbar-color: var(--dim) transparent;
+}
+
+.body > * {
+	animation: rise 0.35s ease-out calc(0.15s + var(--k, 0) * 60ms) both;
+}
+
+@keyframes rise {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+
+.body p {
+	margin: 0 0 12px;
+}
+
+.body b,
+.body strong {
+	font-weight: normal;
+	color: var(--fg);
+}
+
+.body a {
+	color: var(--accent);
+	text-decoration: none;
+	border-bottom: 2px dotted currentColor;
+}
+
+.body a:hover,
+.body a:focus-visible {
+	color: var(--fg);
+	outline: none;
+}
+
+.body ul:not(.repos) {
+	margin: 0 0 12px;
+	padding: 0;
+	list-style: none;
+}
+
+.body ul:not(.repos) li {
+	position: relative;
+	margin-bottom: 8px;
+	padding-left: 24px;
+}
+
+.body ul:not(.repos) li::before {
+	content: '';
+	position: absolute;
+	left: 4px;
+	top: 0.42em;
+	width: 6px;
+	height: 6px;
+	background: var(--accent);
+	box-shadow: 0 0 6px var(--accent);
+}
+
+.body .note {
+	color: var(--mid);
+}
+
+.body .more {
+	display: inline-block;
+	margin-top: 8px;
+	font: 12px/1.6 var(--font-label);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+/* the repo list, as a menu */
+.repos {
+	margin: 4px -12px 0;
+	padding: 0;
+	list-style: none;
+}
+
+.repos li {
+	animation: rise 0.3s ease-out calc(var(--k, 0) * 50ms) both;
+}
+
+.body a.repo {
+	position: relative;
+	display: grid;
+	gap: 3px;
+	padding: 9px 12px 9px 34px;
+	border: 0;
+	color: inherit;
+}
+
+.repo::before {
+	content: '';
+	position: absolute;
+	left: 13px;
+	top: 12px;
+	width: 8px;
+	height: 14px;
+	background: var(--accent);
+	clip-path: var(--arrow);
+	opacity: 0;
+}
+
+.body a.repo:hover,
+.body a.repo:focus-visible {
+	background: rgb(241 241 244 / 0.06);
+	color: inherit;
+}
+
+.repo:hover::before,
+.repo:focus-visible::before {
+	opacity: 1;
+	animation: nudge 1s steps(2) infinite;
+}
+
+.repo-name {
+	font: 500 21px/1.1 var(--font-name);
+	color: var(--fg);
+}
+
+.repo-desc {
+	font-size: 21px;
+	line-height: 1.1;
+}
+
+.repo-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	font: 11px/1.6 var(--font-label);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.repo-meta .dot {
+	width: 8px;
+	height: 8px;
+	background: var(--c);
+	box-shadow: 0 0 6px var(--c);
+}
+
+.loading .cursor {
+	animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+	50% {
+		opacity: 0;
+	}
+}
+
+@media (max-width: 640px) {
+	.bar {
+		padding: 16px 18px 12px;
+	}
+
+	.bar::after {
+		left: 18px;
+		right: 18px;
+	}
+
+	#window-title {
+		font-size: 24px;
+	}
+
+	.body {
+		padding: 14px 20px 20px;
+		font-size: 21px;
+	}
+}
+
+.noscript {
+	position: fixed;
+	inset: auto 16px 40px;
+	text-align: center;
+	font-size: 22px;
+	color: var(--mid);
+}
+
+.noscript a {
+	color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0s !important;
+		animation-delay: 0s !important;
+		animation-iteration-count: 1 !important;
+		transition: none !important;
+	}
+}
