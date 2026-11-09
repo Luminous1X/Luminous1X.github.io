@@ -406,15 +406,6 @@ body {
 	.sat .label small {
 		display: none;
 	}
-
-	.close {
-		font-size: 0;
-	}
-
-	.close::after {
-		content: 'Close';
-		font-size: 12px;
-	}
 }
 
 /* ------------------------------------------------------------ the "copied" note */
@@ -618,6 +609,21 @@ dialog.closing .frame {
 	background: var(--fg);
 	color: var(--bg);
 	outline: none;
+}
+
+/* "ESC" where there's a keyboard, "Close" on touch screens */
+.close .on-touch {
+	display: none;
+}
+
+@media (hover: none) {
+	.close .on-keys {
+		display: none;
+	}
+
+	.close .on-touch {
+		display: inline;
+	}
 }
 
 .body {
