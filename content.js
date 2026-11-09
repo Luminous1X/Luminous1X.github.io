@@ -80,12 +80,14 @@ window.SITE = {
 		}
 	],
 
-	// the outer ring: links. Leave `url` empty and it shows as "add link" until you fill it in.
+	// the outer ring. Each one either opens a link (`url`, a full https://… address)
+	// or copies some text (`copy`) and pops up a note saying so (`toast`).
+	// With neither, it shows as "add link" until you fill it in.
 	// glyphs available: code, chat, play, mail, globe, music, gamepad, person, folder, heart, star
 	socials: [
 		{ label: 'GitHub', glyph: 'code', url: 'https://github.com/Luminous1X' },
-		{ label: 'Discord', glyph: 'chat', url: '_ominousbeing' },
+		{ label: 'Discord', glyph: 'chat', copy: '_ominousbeing', toast: 'Discord username copied' },
 		{ label: 'YouTube', glyph: 'play', url: 'https://www.youtube.com/@Luminous540' },
-		{ label: 'Email', glyph: 'mail', url: '781tm2mxq@mozmail.com' } // e.g. 'mailto:you@example.com'
+		{ label: 'Email', glyph: 'mail', copy: '781tm2mxq@mozmail.com', toast: 'Email copied' }
 	]
 };

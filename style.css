@@ -417,6 +417,93 @@ body {
 	}
 }
 
+/* ------------------------------------------------------------ the "copied" note */
+
+.toast {
+	position: fixed;
+	left: 50%;
+	bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+	z-index: 60;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	max-width: calc(100vw - 40px);
+	padding: 11px 18px 11px 12px;
+	background: var(--panel);
+	box-shadow:
+		0 -4px var(--fg),
+		0 4px var(--fg),
+		-4px 0 var(--fg),
+		4px 0 var(--fg);
+	filter: drop-shadow(0 0 22px rgb(255 217 138 / 0.16));
+	pointer-events: none;
+	opacity: 0;
+	visibility: hidden;
+	transform: translate(-50%, 12px);
+	transition:
+		opacity 0.2s steps(3),
+		transform 0.2s steps(3),
+		visibility 0s 0.2s;
+}
+
+.toast.show {
+	opacity: 1;
+	visibility: visible;
+	transform: translate(-50%, 0);
+	transition: none;
+	animation: toast-in 0.3s steps(4);
+}
+
+.toast.manual {
+	pointer-events: auto;
+}
+
+@keyframes toast-in {
+	from {
+		opacity: 0;
+		transform: translate(-50%, 14px);
+	}
+}
+
+.toast > svg {
+	flex: none;
+	width: 28px;
+	height: 28px;
+	filter: drop-shadow(0 0 5px rgb(241 241 244 / 0.35));
+}
+
+.toast-text {
+	display: grid;
+	gap: 5px;
+	min-width: 0;
+}
+
+.toast-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font: 12px/1 var(--font-label);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--fg);
+	white-space: nowrap;
+}
+
+.toast-title svg {
+	flex: none;
+	width: 14px;
+	height: 12px;
+	filter: drop-shadow(0 0 4px var(--accent));
+}
+
+.toast-value {
+	font-size: 20px;
+	line-height: 1;
+	color: var(--mid);
+	overflow-wrap: anywhere;
+	user-select: text;
+}
+
 /* ------------------------------------------------------------ windows */
 
 dialog#window {

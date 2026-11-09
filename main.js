@@ -122,11 +122,13 @@
 
 	[...sections, ...links].forEach((item, order) => {
 		const isSection = item.ring === 0;
-		const empty = !isSection && !item.url;
+		const copy = !isSection && item.copy ? String(item.copy) : '';
+		const empty = !isSection && !copy && !item.url;
+		const isLink = !isSection && !copy && !empty;
 		const isMail = /^mailto:/i.test(item.url || '');
-		const el = document.createElement(isSection || empty ? 'button' : 'a');
+		const el = document.createElement(isLink ? 'a' : 'button');
 		el.className = 'sat' + (empty ? ' empty' : '');
-		if (el.tagName === 'A') {
+		if (isLink) {
 			el.href = item.url;
 			if (!isMail) {
 				el.target = '_blank';
@@ -135,23 +137,33 @@
 		} else {
 			el.type = 'button';
 		}
+		const note = empty ? 'add link' : copy ? 'copy' : '';
 		el.innerHTML =
 			glyphSvg(item.glyph) +
-			`<span class="label" aria-hidden="true">${esc(item.label)}${empty ? '<small>· add link</small>' : ''}</span>`;
+			`<span class="label" aria-hidden="true">${esc(item.label)}${note ? `<small>· ${note}</small>` : ''}</span>`;
 		el.setAttribute(
 			'aria-label',
 			isSection
 				? `${item.label}, opens a window`
-				: empty
-					? `${item.label}, no link yet`
-					: isMail
-						? `${item.label}`
-						: `${item.label}, opens in a new tab`
+				: copy
+					? `${item.label}: copy ${copy}`
+					: empty
+						? `${item.label}, no link yet`
+						: isMail
+							? `${item.label}`
+							: `${item.label}, opens in a new tab`
 		);
 		if (empty) el.setAttribute('aria-disabled', 'true');
 
+		const ring = isSection ? sections : links;
+		const i = ring.indexOf(item);
+		const base = isSection ? -Math.PI / 2 + (i / ring.length) * TAU : Math.PI / 5 + (i / ring.length) * TAU;
+		const sat = { el, ring: item.ring, base, order, shown: false, z: 0, trail: [], x: 0, y: 0 };
+		sats.push(sat);
+
 		el.addEventListener('click', (e) => {
 			if (isSection) openWindow(item);
+			else if (copy) copyAndTell(item, copy, sat);
 			else if (empty) e.preventDefault();
 		});
 		el.addEventListener('pointerenter', () => hovered.add(el));
@@ -163,11 +175,6 @@
 			if (focused === el) focused = null;
 		});
 		$('#orbit').append(el);
-
-		const ring = isSection ? sections : links;
-		const i = ring.indexOf(item);
-		const base = isSection ? -Math.PI / 2 + (i / ring.length) * TAU : Math.PI / 5 + (i / ring.length) * TAU;
-		sats.push({ el, ring: item.ring, base, order, shown: false, z: 0, trail: [] });
 	});
 
 	// ------------------------------------------------------------ layout
@@ -479,6 +486,8 @@
 			const depth = Math.sin(angle);
 			const scale = (0.86 + 0.16 * depth) * (0.35 + 0.65 * e);
 			const opacity = (0.6 + 0.2 * (depth + 1)) * clamp(k * 3, 0, 1);
+			s.x = x;
+			s.y = y;
 			s.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${scale.toFixed(3)})`;
 			s.el.style.opacity = opacity.toFixed(3);
 			const z = depth >= 0 ? 30 : 10;
@@ -501,6 +510,89 @@
 			});
 			ctx.globalAlpha = 1;
 		}
+	}
+
+	// ------------------------------------------------------------ copying, with a little note
+
+	const CHECK = ['......#', '.....##', '#...##.', '##.##..', '.###...', '..#....'];
+	const toastEl = $('#toast');
+	let toastTimer = 0;
+
+	async function copyText(text) {
+		try {
+			await navigator.clipboard.writeText(text);
+			return true;
+		} catch {}
+		// older browsers, or no clipboard permission: the select-and-copy fallback
+		const back = document.activeElement;
+		const area = document.createElement('textarea');
+		area.value = text;
+		area.setAttribute('readonly', '');
+		area.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+		document.body.append(area);
+		area.select();
+		let ok = false;
+		try {
+			ok = document.execCommand('copy');
+		} catch {}
+		area.remove();
+		back?.focus?.({ preventScroll: true });
+		return ok;
+	}
+
+	function showToast(glyph, title, value, ok) {
+		toastEl.innerHTML =
+			glyphSvg(glyph) +
+			`<span class="toast-text"><span class="toast-title">${ok ? gridSvg(CHECK, { '#': 'var(--accent)' }) : ''}${esc(title)}</span><span class="toast-value">${esc(value)}</span></span>`;
+		// if it couldn't copy, leave it up longer so the text can be selected by hand
+		toastEl.classList.toggle('manual', !ok);
+		toastEl.classList.remove('show');
+		void toastEl.offsetWidth; // restarts the pop-in when one is already showing
+		toastEl.classList.add('show');
+		clearTimeout(toastTimer);
+		toastTimer = setTimeout(() => toastEl.classList.remove('show'), ok ? 2600 : 8000);
+	}
+
+	async function copyAndTell(item, text, sat) {
+		const ok = await copyText(text);
+		if (ok) burst(sat.x, sat.y);
+		showToast(item.glyph, ok ? item.toast || `${item.label} copied` : "Couldn't copy, here it is", text, ok);
+	}
+
+	// a little burst of pixels from whatever got copied
+	const sparks = [];
+	function burst(x, y) {
+		if (still) return;
+		const born = now();
+		for (let i = 0; i < 16; i++) {
+			const angle = Math.random() * TAU;
+			const speed = 60 + Math.random() * 110;
+			sparks.push({
+				x,
+				y,
+				vx: Math.cos(angle) * speed,
+				vy: Math.sin(angle) * speed,
+				born,
+				life: 0.45 + Math.random() * 0.45,
+				accent: Math.random() < 0.4
+			});
+		}
+	}
+
+	function drawSparks(t) {
+		for (let i = sparks.length - 1; i >= 0; i--) {
+			const p = sparks[i];
+			const age = t - p.born;
+			if (age > p.life) {
+				sparks.splice(i, 1);
+				continue;
+			}
+			const d = (1 - Math.exp(-3 * age)) / 3; // they slow down as they fly out
+			ctx.globalAlpha = 1 - age / p.life;
+			ctx.fillStyle = p.accent ? ACCENT : FG;
+			ctx.fillRect(p.x + p.vx * d - 1, p.y + p.vy * d - 1, 2, 2);
+		}
+		ctx.globalAlpha = 1;
 	}
 
 	// ------------------------------------------------------------ windows
@@ -688,6 +780,7 @@
 		drawOrbit(t);
 		if (t < FORMED) drawFormation(t);
 		updateSats(t);
+		drawSparks(t);
 
 		requestAnimationFrame(frame);
 	}
