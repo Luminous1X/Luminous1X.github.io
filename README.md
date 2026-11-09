@@ -12,6 +12,8 @@ Live at **https://luminous1x.github.io**
 
 Plain HTML, CSS and JS with no build step. Push to `main` and GitHub Pages updates the site within a minute or so.
 
+THIS IS FREE TO USE! all code can be taken edited posted whatever you wanna do with it, it's OS for a reason
+
 To preview locally:
 
 ```
