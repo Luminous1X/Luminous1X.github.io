@@ -21,3 +21,13 @@ python -m http.server 5173
 ```
 
 then open http://localhost:5173.
+
+## Link preview
+
+`card.png` is the picture apps like Discord show when the site's link is shared. `card.html` draws it from `content.js`.
+
+If you change the name, tagline or icon, update the `og:` tags near the top of `index.html`, then remake the picture (PowerShell, from this folder, needs Chrome):
+
+```
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --hide-scrollbars --window-size=1200,630 --virtual-time-budget=4000 --screenshot="$PWD\card.png" "$PWD\card.html"
+```

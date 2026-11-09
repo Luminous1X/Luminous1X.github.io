@@ -1,0 +1,185 @@
+<!doctype html>
+<!-- Draws the link-preview image (card.png) from content.js: 1200×630, no animation.
+     The README has the one command that turns this page into the PNG. -->
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="robots" content="noindex" />
+		<title>Link preview card</title>
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@600&family=VT323&display=swap"
+		/>
+		<style>
+			html,
+			body {
+				margin: 0;
+				background: #030308;
+			}
+			#card {
+				position: relative;
+				width: 1200px;
+				height: 630px;
+				overflow: hidden;
+				background: radial-gradient(120% 90% at 50% 38%, #0c0c1c 0%, #030308 62%);
+				color: #f1f1f4;
+				--fg: #f1f1f4;
+				--mid: #8b8b9c;
+			}
+			#card > * {
+				position: absolute;
+			}
+			canvas {
+				inset: 0;
+			}
+			svg {
+				display: block;
+				width: 100%;
+				height: 100%;
+			}
+			.halo {
+				filter: blur(22px);
+				opacity: 0.8;
+			}
+			.sat {
+				width: 44px;
+				height: 44px;
+				margin: -22px 0 0 -22px;
+				filter: drop-shadow(0 0 6px rgb(241 241 244 / 0.4));
+			}
+			h1,
+			p {
+				left: 0;
+				right: 0;
+				margin: 0;
+				text-align: center;
+			}
+			h1 {
+				top: 408px;
+				font: 600 88px/1 'Pixelify Sans', monospace;
+				letter-spacing: 0.02em;
+				text-shadow:
+					0 0 2px rgb(241 241 244 / 0.6),
+					0 0 22px rgb(241 241 244 / 0.4);
+			}
+			p {
+				top: 516px;
+				font: 36px/1 'VT323', monospace;
+				color: var(--mid);
+			}
+			.vignette {
+				inset: 0;
+				background: radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.55) 100%);
+			}
+		</style>
+		<script src="content.js"></script>
+		<script src="glyphs.js"></script>
+	</head>
+	<body>
+		<div id="card">
+			<canvas id="sky" width="1200" height="630"></canvas>
+			<div class="vignette"></div>
+			<h1 id="name"></h1>
+			<p id="tagline"></p>
+		</div>
+		<script>
+			const W = 1200, H = 630, CX = 600, CY = 222, TILT = -0.2, FLAT = 0.36, RADII = [205, 330], CELL = 8;
+			const TAU = Math.PI * 2;
+			const card = document.getElementById('card');
+			card.style.setProperty('--accent', SITE.accent);
+			document.getElementById('name').textContent = SITE.name;
+			document.getElementById('tagline').textContent = SITE.tagline;
+
+			// seeded, so the same content always gives the same picture
+			let seed = 0x6c756d69;
+			const rand = () => {
+				seed = (seed + 0x6d2b79f5) | 0;
+				let t = seed;
+				t = Math.imul(t ^ (t >>> 15), t | 1);
+				t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+				return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+			};
+
+			function gridSvg(rows, tones) {
+				const width = Math.max(...rows.map((r) => r.length));
+				const paths = {};
+				rows.forEach((row, y) => {
+					for (let x = 0; x < row.length; ) {
+						const ch = row[x];
+						let w = 1;
+						while (row[x + w] === ch) w++;
+						if (tones[ch]) paths[ch] = (paths[ch] || '') + `M${x} ${y}h${w}v1h-${w}z`;
+						x += w;
+					}
+				});
+				return `<svg viewBox="0 0 ${width} ${rows.length}" shape-rendering="crispEdges">${Object.entries(paths)
+					.map(([ch, d]) => `<path style="fill:${tones[ch]}" d="${d}"/>`)
+					.join('')}</svg>`;
+			}
+			const TONES = { o: '#000', '#': 'var(--fg)', '+': 'var(--mid)', '*': 'var(--accent)' };
+
+			function place(html, x, y, w, h, cls) {
+				const el = document.createElement('div');
+				el.className = cls || '';
+				el.style.cssText = `left:${x}px;top:${y}px;` + (w ? `width:${w}px;height:${h}px` : '');
+				el.innerHTML = html;
+				card.insertBefore(el, card.querySelector('.vignette'));
+				return el;
+			}
+			const orbitPoint = (r, a) => {
+				const X = r * Math.cos(a), Y = r * FLAT * Math.sin(a);
+				return [CX + X * Math.cos(TILT) - Y * Math.sin(TILT), CY + X * Math.sin(TILT) + Y * Math.cos(TILT)];
+			};
+
+			// sky: stars, the two dotted orbits and their dust
+			const ctx = document.getElementById('sky').getContext('2d');
+			ctx.fillStyle = '#f1f1f4';
+			for (let i = 0; i < 330; i++) {
+				const big = rand() < 0.07;
+				const x = rand() * W, y = rand() * H;
+				ctx.globalAlpha = big ? 0.9 : 0.15 + rand() * 0.5;
+				if (big) {
+					ctx.fillRect(x - 6, y - 0.5, 12, 1);
+					ctx.fillRect(x - 0.5, y - 6, 1, 12);
+				}
+				const s = big ? 2 : rand() < 0.3 ? 1.5 : 1;
+				ctx.fillRect(x, y, s, s);
+			}
+			ctx.save();
+			ctx.translate(CX, CY);
+			ctx.rotate(TILT);
+			ctx.setLineDash([2, 7]);
+			ctx.strokeStyle = 'rgba(241,241,244,.2)';
+			ctx.globalAlpha = 1;
+			for (const r of RADII) {
+				ctx.beginPath();
+				ctx.ellipse(0, 0, r, r * FLAT, 0, 0, TAU);
+				ctx.stroke();
+			}
+			ctx.restore();
+			RADII.forEach((r, ring) => {
+				for (let i = 0; i < r / 3; i++) {
+					const [x, y] = orbitPoint(r + (rand() - 0.5) * (ring ? 20 : 14), rand() * TAU);
+					ctx.globalAlpha = 0.15 + rand() * 0.4;
+					ctx.fillRect(x, y, 1.5, 1.5);
+				}
+			});
+
+			// the icon, with its glow behind it
+			const iw = Math.max(...SITE.icon.map((r) => r.length)) * CELL, ih = SITE.icon.length * CELL;
+			const glow = { '#': 'var(--fg)', '+': 'var(--fg)', '*': 'var(--accent)' };
+			place(gridSvg(SITE.icon, glow), CX - iw / 2, CY - ih / 2, iw, ih, 'halo');
+			place(gridSvg(SITE.icon, TONES), CX - iw / 2, CY - ih / 2, iw, ih);
+
+			// everything in orbit, spread the same way as on the site
+			[SITE.sections, SITE.socials].forEach((items, ring) =>
+				items.forEach((item, i) => {
+					const angle = (ring ? Math.PI / 5 : -Math.PI / 2) + (i / items.length) * TAU + (ring ? 0.35 : 1.87);
+					const [x, y] = orbitPoint(RADII[ring], angle);
+					const el = place(gridSvg(GLYPHS[item.glyph] || GLYPHS.globe, TONES), x, y, 0, 0, 'sat');
+					el.style.opacity = 0.7 + 0.3 * ((Math.sin(angle) + 1) / 2);
+				})
+			);
+		</script>
+	</body>
+</html>
