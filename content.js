@@ -6,8 +6,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 window.SITE = {
-	name: 'Luminous1X',
-	tagline: 'c++ · building things to see how they work',
+	name: 'HxD',
+	tagline: 'c++ · larping till my claude usage runs out',
 
 	// shown under the tagline once the orbit opens
 	hint: 'pick a star',
