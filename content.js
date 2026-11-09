@@ -7,7 +7,7 @@
 
 window.SITE = {
 	name: 'Luminous1X',
-	tagline: 'c++ · larping till i run out of claude usage ',
+	tagline: 'c++ · building things to see how they work',
 
 	// shown under the tagline once the orbit opens
 	hint: 'pick a star',
