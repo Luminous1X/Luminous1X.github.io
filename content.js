@@ -55,7 +55,7 @@ window.SITE = {
 			title: 'About me',
 			body: `
 				<p>Hi, I'm <b>Luminous1X</b>.</p>
-				<p>I write C++ and like figuring out how things work under the hood, usually by building them myself.</p>
+				<p>I (try to) write C++ and like figuring out how things work under the hood, usually by ripping programs apart and rebuilding them.</p>
 				<p>Pick a star around the icon to look around, or find me through the links on the outer ring.</p>
 			`
 		},
@@ -73,7 +73,7 @@ window.SITE = {
 			title: "What I'm up to",
 			body: `
 				<ul>
-					<li>Learning C++ by writing the low-level parts myself: allocators, thread pools, hashing.</li>
+					<li>Learning C++, linear algebra, cyber sec.</li>
 					<li>Building this site.</li>
 				</ul>
 			`
@@ -84,8 +84,8 @@ window.SITE = {
 	// glyphs available: code, chat, play, mail, globe, music, gamepad, person, folder, heart, star
 	socials: [
 		{ label: 'GitHub', glyph: 'code', url: 'https://github.com/Luminous1X' },
-		{ label: 'Discord', glyph: 'chat', url: '' },
-		{ label: 'YouTube', glyph: 'play', url: '' },
-		{ label: 'Email', glyph: 'mail', url: '' } // e.g. 'mailto:you@example.com'
+		{ label: 'Discord', glyph: 'chat', url: '_ominousbeing' },
+		{ label: 'YouTube', glyph: 'play', url: 'https://www.youtube.com/@Luminous540' },
+		{ label: 'Email', glyph: 'mail', url: '781tm2mxq@mozmail.com' } // e.g. 'mailto:you@example.com'
 	]
 };
