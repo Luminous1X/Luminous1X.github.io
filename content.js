@@ -54,7 +54,7 @@ window.SITE = {
 			glyph: 'person',
 			title: 'About me',
 			body: `
-				<p>Hi, I'm <b></b>.</p>
+				<p>Hi, I'm HxD (also known as human)<b></b>.</p>
 				<p>I (try to) write C++ and like figuring out how things work under the hood, usually by ripping programs apart and rebuilding them.</p>
 				<p>Pick a star around the icon to look around, or find me through the links on the outer ring.</p>
 			`
