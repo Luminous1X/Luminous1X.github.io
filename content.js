@@ -88,6 +88,6 @@ window.SITE = {
 		{ label: 'GitHub', glyph: 'code', url: 'https://github.com/Luminous1X' },
 		{ label: 'Discord', glyph: 'chat', copy: '_ominousbeing', toast: 'Discord username copied' },
 		{ label: 'YouTube', glyph: 'play', url: 'https://www.youtube.com/@Luminous540' },
-		{ label: 'Email', glyph: 'mail', copy: '781tm2mxq@mozmail.com', toast: 'Email copied' }
+		{ label: 'Email', glyph: 'mail', copy: 'jmedlin@fuck.it', toast: 'Email copied' }
 	]
 };
