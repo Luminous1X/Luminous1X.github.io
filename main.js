@@ -728,6 +728,60 @@
 		winBody.append(more);
 	}
 
+	// ------------------------------------------------------------ view counter
+
+	const EYE = [
+		'...#####...',
+		'.##..+..##.',
+		'#...+#+...#',
+		'#..+###+..#',
+		'#...+#+...#',
+		'.##..+..##.',
+		'...#####...'
+	];
+
+	// adds this visit to the count once per browser (just reads it after that), then shows
+	// the total in the corner once the orbit is open; if the counter can't be reached, no badge
+	async function showViews() {
+		const el = $('#views');
+		if (!SITE.views || !el) return;
+		let counted = false;
+		try {
+			counted = localStorage.getItem('views-counted') === '1';
+		} catch {}
+		let views;
+		try {
+			const res = await fetch(SITE.views, { method: counted ? 'GET' : 'POST' });
+			if (!res.ok) throw new Error(`counter said ${res.status}`);
+			views = Number((await res.json()).views);
+			if (!Number.isFinite(views)) throw new Error('no count in the reply');
+			if (!counted) {
+				try {
+					localStorage.setItem('views-counted', '1');
+				} catch {}
+			}
+		} catch {
+			return;
+		}
+
+		await orbitOpen;
+		const word = views === 1 ? 'view' : 'views';
+		el.innerHTML =
+			gridSvg(EYE, TONES) +
+			`<b aria-hidden="true">0</b><span aria-hidden="true">${word}</span>` +
+			`<span class="sr-only">${views.toLocaleString('en')} ${word}</span>`;
+		el.hidden = false;
+
+		const number = el.querySelector('b');
+		const begin = performance.now();
+		const tick = (ms) => {
+			const k = still ? 1 : clamp((ms - begin) / 1300, 0, 1);
+			number.textContent = Math.round(views * easeOut(k)).toLocaleString('en');
+			if (k < 1) requestAnimationFrame(tick);
+		};
+		requestAnimationFrame(tick);
+	}
+
 	// ------------------------------------------------------------ the clock
 
 	const t0 = performance.now();
@@ -747,6 +801,8 @@
 		if (still) warp += Math.max(0, SETTLED - now());
 	});
 
+	let markOpen;
+	const orbitOpen = new Promise((resolve) => (markOpen = resolve));
 	let formed = false;
 	let opened = false;
 	let speed = 1;
@@ -764,6 +820,7 @@
 		if (!opened && t >= OPEN) {
 			document.body.classList.add('open');
 			opened = true;
+			markOpen();
 		}
 
 		// the orbit eases to a stop while you're pointing at something in it, or reading a window
@@ -788,4 +845,5 @@
 	layout();
 	window.addEventListener('resize', layout);
 	requestAnimationFrame(frame);
+	showViews();
 })();

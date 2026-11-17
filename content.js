@@ -18,6 +18,9 @@ window.SITE = {
 	// your GitHub username; the Projects window lists your public repos from it
 	github: 'Luminous1X',
 
+	// the view counter's address (the Worker in counter/); leave it empty to hide the eye badge
+	views: 'https://hxd-views.hxd-views.workers.dev/',
+
 	// the big pixel icon in the middle (any size works, keep every row the same length)
 	icon: [
 		'............o........o...',

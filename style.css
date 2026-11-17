@@ -408,6 +408,43 @@ body {
 	}
 }
 
+/* ------------------------------------------------------------ view count */
+
+.views {
+	position: fixed;
+	left: calc(18px + env(safe-area-inset-left, 0px));
+	bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+	/* above the vignette, which would dim it this close to the corner */
+	z-index: 55;
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	margin: 0;
+	font: 12px/1 var(--font-label);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--mid);
+	pointer-events: none;
+	opacity: 0;
+	animation: fade 0.8s 0.3s forwards;
+}
+
+.views[hidden] {
+	display: none;
+}
+
+.views svg {
+	flex: none;
+	width: 22px;
+	height: 14px;
+	filter: drop-shadow(0 0 4px rgb(241 241 244 / 0.3));
+}
+
+.views b {
+	font-weight: normal;
+	color: var(--fg);
+}
+
 /* ------------------------------------------------------------ the "copied" note */
 
 .toast {

@@ -1,0 +1,28 @@
+# The view counter for the about-me site: a tiny Cloudflare Worker and a one-table
+# D1 database. Deploy changes with `npx wrangler deploy` from this folder; pushing to
+# GitHub doesn't update it.
+name = "hxd-views"
+main = "src/index.js"
+compatibility_date = "2025-11-01"
+workers_dev = true
+
+[vars]
+# pages allowed to read the count: the live site and local previews
+READ_ORIGINS = "https://luminous1x.github.io http://localhost:5173 http://127.0.0.1:5173"
+# pages whose visits add to it: only the live site, so testing locally doesn't
+COUNT_ORIGINS = "https://luminous1x.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hxd-views"
+database_id = "a0ee06da-b3c6-49c1-b52a-dbbc5f245574"
+migrations_dir = "migrations"
+
+# at most 5 counted visits a minute from one IP address
+[[ratelimits]]
+name = "LIMITER"
+namespace_id = "4721"
+
+  [ratelimits.simple]
+  limit = 5
+  period = 60
